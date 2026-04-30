@@ -1,0 +1,281 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {ISentrixV2Factory} from "./interfaces/ISentrixV2Factory.sol";
+import {ISentrixV2Pair} from "./interfaces/ISentrixV2Pair.sol";
+import {IERC20Minimal} from "./interfaces/IERC20Minimal.sol";
+import {IWSRX} from "./interfaces/IWSRX.sol";
+import {SentrixV2Library} from "./libraries/SentrixV2Library.sol";
+import {TransferHelper} from "./libraries/TransferHelper.sol";
+
+// SentrixV2Router02 — UniswapV2Router02 functional equivalent.
+//
+// Naming: SRX takes the place of ETH throughout (e.g. swapExactSRXForTokens
+// instead of swapExactETHForTokens). WSRX is the canonical wrapped-SRX SRC-20
+// (deployed in `sentrix-labs/canonical-contracts`).
+contract SentrixV2Router02 {
+    address public immutable factory;
+    address public immutable WSRX;
+
+    modifier ensure(uint256 deadline) {
+        require(deadline >= block.timestamp, "SentrixV2Router: EXPIRED");
+        _;
+    }
+
+    constructor(address _factory, address _WSRX) {
+        factory = _factory;
+        WSRX = _WSRX;
+    }
+
+    // Allow Router to receive native SRX from WSRX.withdraw()
+    receive() external payable {
+        require(msg.sender == WSRX, "SentrixV2Router: ONLY_WSRX");
+    }
+
+    // ── Add liquidity ────────────────────────────────────────────────
+
+    function _addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin
+    ) internal returns (uint256 amountA, uint256 amountB) {
+        if (ISentrixV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
+            ISentrixV2Factory(factory).createPair(tokenA, tokenB);
+        }
+        (uint256 reserveA, uint256 reserveB) = SentrixV2Library.getReserves(factory, tokenA, tokenB);
+        if (reserveA == 0 && reserveB == 0) {
+            (amountA, amountB) = (amountADesired, amountBDesired);
+        } else {
+            uint256 amountBOptimal = SentrixV2Library.quote(amountADesired, reserveA, reserveB);
+            if (amountBOptimal <= amountBDesired) {
+                require(amountBOptimal >= amountBMin, "SentrixV2Router: INSUFFICIENT_B_AMOUNT");
+                (amountA, amountB) = (amountADesired, amountBOptimal);
+            } else {
+                uint256 amountAOptimal = SentrixV2Library.quote(amountBDesired, reserveB, reserveA);
+                assert(amountAOptimal <= amountADesired);
+                require(amountAOptimal >= amountAMin, "SentrixV2Router: INSUFFICIENT_A_AMOUNT");
+                (amountA, amountB) = (amountAOptimal, amountBDesired);
+            }
+        }
+    }
+
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
+        (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
+        address pair = SentrixV2Library.pairFor(factory, tokenA, tokenB);
+        TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
+        TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
+        liquidity = ISentrixV2Pair(pair).mint(to);
+    }
+
+    function addLiquiditySRX(
+        address token,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountSRXMin,
+        address to,
+        uint256 deadline
+    ) external payable ensure(deadline) returns (uint256 amountToken, uint256 amountSRX, uint256 liquidity) {
+        (amountToken, amountSRX) =
+            _addLiquidity(token, WSRX, amountTokenDesired, msg.value, amountTokenMin, amountSRXMin);
+        address pair = SentrixV2Library.pairFor(factory, token, WSRX);
+        TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
+        IWSRX(WSRX).deposit{value: amountSRX}();
+        require(IWSRX(WSRX).transfer(pair, amountSRX), "SentrixV2Router: WSRX_TRANSFER_FAILED");
+        liquidity = ISentrixV2Pair(pair).mint(to);
+        // Refund dust SRX
+        if (msg.value > amountSRX) TransferHelper.safeTransferSRX(msg.sender, msg.value - amountSRX);
+    }
+
+    // ── Remove liquidity ─────────────────────────────────────────────
+
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) public ensure(deadline) returns (uint256 amountA, uint256 amountB) {
+        address pair = SentrixV2Library.pairFor(factory, tokenA, tokenB);
+        ISentrixV2Pair(pair).transferFrom(msg.sender, pair, liquidity);
+        (uint256 amount0, uint256 amount1) = ISentrixV2Pair(pair).burn(to);
+        (address token0,) = SentrixV2Library.sortTokens(tokenA, tokenB);
+        (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
+        require(amountA >= amountAMin, "SentrixV2Router: INSUFFICIENT_A_AMOUNT");
+        require(amountB >= amountBMin, "SentrixV2Router: INSUFFICIENT_B_AMOUNT");
+    }
+
+    function removeLiquiditySRX(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountSRXMin,
+        address to,
+        uint256 deadline
+    ) public ensure(deadline) returns (uint256 amountToken, uint256 amountSRX) {
+        (amountToken, amountSRX) =
+            removeLiquidity(token, WSRX, liquidity, amountTokenMin, amountSRXMin, address(this), deadline);
+        TransferHelper.safeTransfer(token, to, amountToken);
+        IWSRX(WSRX).withdraw(amountSRX);
+        TransferHelper.safeTransferSRX(to, amountSRX);
+    }
+
+    // ── Swap ─────────────────────────────────────────────────────────
+
+    // Internal: walk the path and swap pair-by-pair.
+    function _swap(uint256[] memory amounts, address[] memory path, address _to) internal {
+        for (uint256 i; i < path.length - 1; i++) {
+            (address input, address output) = (path[i], path[i + 1]);
+            (address token0,) = SentrixV2Library.sortTokens(input, output);
+            uint256 amountOut = amounts[i + 1];
+            (uint256 amount0Out, uint256 amount1Out) =
+                input == token0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
+            address to = i < path.length - 2 ? SentrixV2Library.pairFor(factory, output, path[i + 2]) : _to;
+            ISentrixV2Pair(SentrixV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+        }
+    }
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256[] memory amounts) {
+        amounts = SentrixV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, "SentrixV2Router: INSUFFICIENT_OUTPUT_AMOUNT");
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]
+        );
+        _swap(amounts, path, to);
+    }
+
+    function swapTokensForExactTokens(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256[] memory amounts) {
+        amounts = SentrixV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, "SentrixV2Router: EXCESSIVE_INPUT_AMOUNT");
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]
+        );
+        _swap(amounts, path, to);
+    }
+
+    function swapExactSRXForTokens(uint256 amountOutMin, address[] calldata path, address to, uint256 deadline)
+        external
+        payable
+        ensure(deadline)
+        returns (uint256[] memory amounts)
+    {
+        require(path[0] == WSRX, "SentrixV2Router: INVALID_PATH");
+        amounts = SentrixV2Library.getAmountsOut(factory, msg.value, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, "SentrixV2Router: INSUFFICIENT_OUTPUT_AMOUNT");
+        IWSRX(WSRX).deposit{value: amounts[0]}();
+        require(
+            IWSRX(WSRX).transfer(SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]),
+            "SentrixV2Router: WSRX_TRANSFER_FAILED"
+        );
+        _swap(amounts, path, to);
+    }
+
+    function swapTokensForExactSRX(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256[] memory amounts) {
+        require(path[path.length - 1] == WSRX, "SentrixV2Router: INVALID_PATH");
+        amounts = SentrixV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, "SentrixV2Router: EXCESSIVE_INPUT_AMOUNT");
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]
+        );
+        _swap(amounts, path, address(this));
+        IWSRX(WSRX).withdraw(amounts[amounts.length - 1]);
+        TransferHelper.safeTransferSRX(to, amounts[amounts.length - 1]);
+    }
+
+    function swapExactTokensForSRX(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256[] memory amounts) {
+        require(path[path.length - 1] == WSRX, "SentrixV2Router: INVALID_PATH");
+        amounts = SentrixV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, "SentrixV2Router: INSUFFICIENT_OUTPUT_AMOUNT");
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]
+        );
+        _swap(amounts, path, address(this));
+        IWSRX(WSRX).withdraw(amounts[amounts.length - 1]);
+        TransferHelper.safeTransferSRX(to, amounts[amounts.length - 1]);
+    }
+
+    function swapSRXForExactTokens(uint256 amountOut, address[] calldata path, address to, uint256 deadline)
+        external
+        payable
+        ensure(deadline)
+        returns (uint256[] memory amounts)
+    {
+        require(path[0] == WSRX, "SentrixV2Router: INVALID_PATH");
+        amounts = SentrixV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= msg.value, "SentrixV2Router: EXCESSIVE_INPUT_AMOUNT");
+        IWSRX(WSRX).deposit{value: amounts[0]}();
+        require(
+            IWSRX(WSRX).transfer(SentrixV2Library.pairFor(factory, path[0], path[1]), amounts[0]),
+            "SentrixV2Router: WSRX_TRANSFER_FAILED"
+        );
+        _swap(amounts, path, to);
+        if (msg.value > amounts[0]) TransferHelper.safeTransferSRX(msg.sender, msg.value - amounts[0]);
+    }
+
+    // ── Pure pass-throughs ───────────────────────────────────────────
+
+    function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) public pure returns (uint256 amountB) {
+        return SentrixV2Library.quote(amountA, reserveA, reserveB);
+    }
+
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
+        public
+        pure
+        returns (uint256 amountOut)
+    {
+        return SentrixV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
+    }
+
+    function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut)
+        public
+        pure
+        returns (uint256 amountIn)
+    {
+        return SentrixV2Library.getAmountIn(amountOut, reserveIn, reserveOut);
+    }
+
+    function getAmountsOut(uint256 amountIn, address[] calldata path) public view returns (uint256[] memory amounts) {
+        return SentrixV2Library.getAmountsOut(factory, amountIn, path);
+    }
+
+    function getAmountsIn(uint256 amountOut, address[] calldata path) public view returns (uint256[] memory amounts) {
+        return SentrixV2Library.getAmountsIn(factory, amountOut, path);
+    }
+}
