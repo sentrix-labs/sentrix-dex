@@ -1,0 +1,25 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 999999
+via_ir = false
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+
+[rpc_endpoints]
+sentrix_mainnet = "https://rpc.sentrixchain.com"
+sentrix_testnet = "https://testnet-rpc.sentrixchain.com"
+
+[etherscan]
+sentrix_mainnet = {key = "dummy", url = "https://scan.sentrixchain.com/api", chain = 7119}
+sentrix_testnet = {key = "dummy", url = "https://scan.sentrixchain.com/api", chain = 7120}
