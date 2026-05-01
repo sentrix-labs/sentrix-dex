@@ -126,8 +126,9 @@ contract SentrixV2Router02 {
         address to,
         uint256 deadline
     ) public ensure(deadline) returns (uint256 amountToken, uint256 amountSRX) {
-        (amountToken, amountSRX) =
-            removeLiquidity(token, WSRX, liquidity, amountTokenMin, amountSRXMin, address(this), deadline);
+        (amountToken, amountSRX) = removeLiquidity(
+            token, WSRX, liquidity, amountTokenMin, amountSRXMin, address(this), deadline
+        );
         TransferHelper.safeTransfer(token, to, amountToken);
         IWSRX(WSRX).withdraw(amountSRX);
         TransferHelper.safeTransferSRX(to, amountSRX);
@@ -144,7 +145,8 @@ contract SentrixV2Router02 {
             (uint256 amount0Out, uint256 amount1Out) =
                 input == token0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
             address to = i < path.length - 2 ? SentrixV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            ISentrixV2Pair(SentrixV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            ISentrixV2Pair(SentrixV2Library.pairFor(factory, input, output))
+                .swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
 
@@ -344,8 +346,7 @@ contract SentrixV2Router02 {
         address to,
         uint256 deadline
     ) public ensure(deadline) returns (uint256 amountSRX) {
-        (, amountSRX) =
-            removeLiquidity(token, WSRX, liquidity, amountTokenMin, amountSRXMin, address(this), deadline);
+        (, amountSRX) = removeLiquidity(token, WSRX, liquidity, amountTokenMin, amountSRXMin, address(this), deadline);
         // For deflationary tokens, the actual balance is what we forward; the
         // amountToken returned by the pair burn may have included a transfer
         // tax that already left this contract.
@@ -393,8 +394,7 @@ contract SentrixV2Router02 {
         address pair = SentrixV2Library.pairFor(factory, token, WSRX);
         uint256 value = approveMax ? type(uint256).max : liquidity;
         ISentrixV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
-        (amountToken, amountSRX) =
-            removeLiquiditySRX(token, liquidity, amountTokenMin, amountSRXMin, to, deadline);
+        (amountToken, amountSRX) = removeLiquiditySRX(token, liquidity, amountTokenMin, amountSRXMin, to, deadline);
     }
 
     function removeLiquiditySRXWithPermitSupportingFeeOnTransferTokens(

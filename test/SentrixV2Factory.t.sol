@@ -72,7 +72,7 @@ contract SentrixV2FactoryTest is Test {
         // The Library's INIT_CODE_HASH MUST equal the Factory's compile-time
         // pair bytecode hash. Drift = every pairFor() call returns wrong addr.
         bytes32 onChain = factory.pairCodeHash();
-        bytes32 baked = 0x87b7369bc2bbcffa756dcecf2bb85130662c78397819f0c4a98176eb8d4bcb60;
+        bytes32 baked = 0xf7d8b4d1ce6c92cb3ce6b366dfb5977578db74e308b88facd5966df9e2a029dd;
         assertEq(onChain, baked, "pairCodeHash drifted from SentrixV2Library.INIT_CODE_HASH");
     }
 

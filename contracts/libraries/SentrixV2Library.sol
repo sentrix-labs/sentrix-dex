@@ -15,8 +15,7 @@ library SentrixV2Library {
     // keccak256(type(SentrixV2Pair).creationCode) of the audit-passed Pair
     // bytecode (post 2026-04-30 audit hardening — initialize() guard,
     // chainid-aware DOMAIN_SEPARATOR). Patched at deploy time. See Deploy.s.sol.
-    bytes32 internal constant INIT_CODE_HASH =
-        0x87b7369bc2bbcffa756dcecf2bb85130662c78397819f0c4a98176eb8d4bcb60;
+    bytes32 internal constant INIT_CODE_HASH = 0xf7d8b4d1ce6c92cb3ce6b366dfb5977578db74e308b88facd5966df9e2a029dd;
 
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, "SentrixV2Library: IDENTICAL_ADDRESSES");
@@ -31,9 +30,7 @@ library SentrixV2Library {
             uint160(
                 uint256(
                     keccak256(
-                        abi.encodePacked(
-                            hex"ff", factory, keccak256(abi.encodePacked(token0, token1)), INIT_CODE_HASH
-                        )
+                        abi.encodePacked(hex"ff", factory, keccak256(abi.encodePacked(token0, token1)), INIT_CODE_HASH)
                     )
                 )
             )

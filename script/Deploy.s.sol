@@ -25,7 +25,7 @@ contract Deploy is Script {
     // to compare *against* — and the same value to live in the Library so
     // pairFor() returns correct addresses post-deploy.
     bytes32 internal constant LIBRARY_INIT_CODE_HASH =
-        0x87b7369bc2bbcffa756dcecf2bb85130662c78397819f0c4a98176eb8d4bcb60;
+        0xf7d8b4d1ce6c92cb3ce6b366dfb5977578db74e308b88facd5966df9e2a029dd;
 
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");

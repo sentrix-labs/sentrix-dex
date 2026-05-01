@@ -198,10 +198,7 @@ contract SentrixV2Pair is SentrixV2ERC20 {
             // K invariant — balance after fee-adjusted (0.3% fee = multiply by 997/1000)
             uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
             uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
-            require(
-                balance0Adjusted * balance1Adjusted >= uint256(_reserve0) * _reserve1 * (1000 ** 2),
-                "SentrixV2: K"
-            );
+            require(balance0Adjusted * balance1Adjusted >= uint256(_reserve0) * _reserve1 * (1000 ** 2), "SentrixV2: K");
         }
 
         _update(balance0, balance1, _reserve0, _reserve1);

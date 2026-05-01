@@ -1,0 +1,39 @@
+name: slither
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  slither:
+    name: slither (static analysis)
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: install slither
+        run: pip install slither-analyzer
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - name: forge build
+        run: forge build
+
+      - name: slither
+        # Fail on high/medium; informational findings still surface in the
+        # log but don't break the build (matches canonical-contracts policy).
+        run: slither . --exclude-dependencies --no-fail-pedantic

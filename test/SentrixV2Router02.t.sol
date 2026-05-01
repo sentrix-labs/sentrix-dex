@@ -150,9 +150,7 @@ contract SentrixV2Router02Test is Test {
         vm.prank(alice);
         tokenA.approve(address(router), type(uint256).max);
         vm.prank(alice);
-        router.addLiquiditySRX{value: 10 ether}(
-            address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1
-        );
+        router.addLiquiditySRX{value: 10 ether}(address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1);
 
         // Now bob swaps 1 SRX → tokenA
         vm.deal(bob, 1 ether);
@@ -171,9 +169,7 @@ contract SentrixV2Router02Test is Test {
         vm.prank(alice);
         tokenA.approve(address(router), type(uint256).max);
         vm.prank(alice);
-        router.addLiquiditySRX{value: 10 ether}(
-            address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1
-        );
+        router.addLiquiditySRX{value: 10 ether}(address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1);
 
         tokenA.mint(bob, 100 ether);
         vm.prank(bob);
@@ -194,9 +190,8 @@ contract SentrixV2Router02Test is Test {
         vm.prank(alice);
         tokenA.approve(address(router), type(uint256).max);
         vm.prank(alice);
-        (,, uint256 liquidity) = router.addLiquiditySRX{value: 10 ether}(
-            address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1
-        );
+        (,, uint256 liquidity) =
+            router.addLiquiditySRX{value: 10 ether}(address(tokenA), 1000 ether, 1, 1, alice, block.timestamp + 1);
 
         // Approve router to pull LP, then remove
         address pair = factory.getPair(address(tokenA), address(wsrx));
@@ -227,9 +222,7 @@ contract SentrixV2Router02Test is Test {
         vm.prank(alice);
         fot.approve(address(router), type(uint256).max);
         vm.prank(alice);
-        router.addLiquiditySRX{value: 10 ether}(
-            address(fot), 1000 ether, 1, 1, alice, block.timestamp + 1
-        );
+        router.addLiquiditySRX{value: 10 ether}(address(fot), 1000 ether, 1, 1, alice, block.timestamp + 1);
 
         // Bob swaps 1 SRX into FoT via the FoT-aware path.
         vm.deal(bob, 1 ether);
@@ -239,9 +232,7 @@ contract SentrixV2Router02Test is Test {
 
         uint256 before = fot.balanceOf(bob);
         vm.prank(bob);
-        router.swapExactSRXForTokensSupportingFeeOnTransferTokens{value: 1 ether}(
-            0, path, bob, block.timestamp + 1
-        );
+        router.swapExactSRXForTokensSupportingFeeOnTransferTokens{value: 1 ether}(0, path, bob, block.timestamp + 1);
         assertGt(fot.balanceOf(bob), before);
     }
 }
