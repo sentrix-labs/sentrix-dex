@@ -67,7 +67,7 @@ git -c commit.gpgsign=false commit -m "addresses: register SentrixV2 DEX (Factor
 
 After Factory + Router live + verified:
 
-1. Deploy a stablecoin SRC-20 (or use a wrapped/bridged stable, see SRX_PRICING_STRATEGY.md in founder-private)
+1. Deploy a stablecoin SRC-20 (or use a wrapped/bridged stable — pricing strategy is operator-internal)
 2. From the Eco Fund wallet (`0xeb70fdefd00fdb768dec06c478f450c351499f14`):
    - Approve Router for `X` SRX-equivalent of WSRX + `Y` of stable
    - Call `Router.addLiquiditySRX(stable, Y, Y_min, X_min, ecoFund, deadline)` with `value: X` SRX
