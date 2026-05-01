@@ -61,6 +61,8 @@ contract SentrixV2Factory is ISentrixV2Factory {
 
     function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, "SentrixV2: FORBIDDEN");
+        // Zero-address would brick fee admin forever. Require a successor.
+        require(_feeToSetter != address(0), "SentrixV2: ZERO_ADDRESS");
         feeToSetter = _feeToSetter;
     }
 }

@@ -57,9 +57,13 @@ contract SentrixV2Pair is SentrixV2ERC20 {
         factory = msg.sender;
     }
 
-    // Called once by the factory at deploy time
+    // Called once by the factory at deploy time. Defensive idempotency
+    // guard — Factory only invokes initialize() inside createPair() so the
+    // path is single-shot today, but a future Factory rewrite that touches
+    // Pair must not be able to re-initialize and silently swap tokens.
     function initialize(address _token0, address _token1) external {
         require(msg.sender == factory, "SentrixV2: FORBIDDEN");
+        require(token0 == address(0), "SentrixV2: ALREADY_INITIALIZED");
         token0 = _token0;
         token1 = _token1;
     }

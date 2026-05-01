@@ -12,9 +12,11 @@ import {ISentrixV2Pair} from "../interfaces/ISentrixV2Pair.sol";
 // addresses that don't match the actual deployed pairs and every Router call
 // fails with "INVALID_PAIR" / OOG.
 library SentrixV2Library {
-    // Placeholder — patched at deploy time. See Deploy.s.sol.
+    // keccak256(type(SentrixV2Pair).creationCode) of the audit-passed Pair
+    // bytecode (post 2026-04-30 audit hardening — initialize() guard,
+    // chainid-aware DOMAIN_SEPARATOR). Patched at deploy time. See Deploy.s.sol.
     bytes32 internal constant INIT_CODE_HASH =
-        0xa07454df7a2cdbc85b7d2304d76b30c66b098569d7b5944e840a26fbc21153f7;
+        0x87b7369bc2bbcffa756dcecf2bb85130662c78397819f0c4a98176eb8d4bcb60;
 
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, "SentrixV2Library: IDENTICAL_ADDRESSES");
