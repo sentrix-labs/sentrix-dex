@@ -1,0 +1,26 @@
+{
+  "_chainId": 7119,
+  "_network": "Sentrix Mainnet",
+  "_deployedAt": "2026-05-01",
+  "_signer": "0x5b5b06688dcdbe532353ac610aaff41af825279d",
+  "_signerRole": "Founder v3 (gas only — does not retain protocol roles)",
+  "_admin": "0xa25236925bc10954e0519731cc7ba97f4bb5714b",
+  "_adminRole": "Sentrix Labs authority — feeToSetter on the Factory",
+  "_note": "Per WALLET_MAP, founder v3 is the premine cold storage; signing this deploy is a one-shot use to bootstrap DEX since EVM-wrapped value transfers (data: \"EVM:21000:\") aren't crediting recipients on chain — known bug, see audits/. Deploys themselves work fine because cast send --create includes calldata and is treated as a contract-creation tx, not a value transfer.",
+  "SentrixV2Factory": {
+    "address": "0xC5344f0DDE0B9916217449Ad9222e446475aD936",
+    "tx": "0x03868af8e4c1db22d5968f4b15d6e5c41c342190406dd40bc226879e19280dbf",
+    "deployer": "0x5b5b06688dcdbe532353ac610aaff41af825279d",
+    "deployer_nonce": 3,
+    "feeToSetter": "0xa25236925bc10954e0519731cc7ba97f4bb5714b",
+    "pairCodeHash": "0xf7d8b4d1ce6c92cb3ce6b366dfb5977578db74e308b88facd5966df9e2a029dd"
+  },
+  "SentrixV2Router02": {
+    "address": "0xAb67E171c0DE0Cd6dD6fE87E5E399C091F9c9dE8",
+    "tx": "0xa0edbfc3c6ecb0ec480af961c384541c1b9d7726b12a1fda60591e2d33649314",
+    "deployer": "0x5b5b06688dcdbe532353ac610aaff41af825279d",
+    "deployer_nonce": 4,
+    "factory": "0xC5344f0DDE0B9916217449Ad9222e446475aD936",
+    "WSRX": "0x4693b113e523A196d9579333c4ab8358e2656553"
+  }
+}

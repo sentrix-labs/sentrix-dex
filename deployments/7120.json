@@ -1,0 +1,21 @@
+{
+  "_chainId": 7120,
+  "_network": "Sentrix Testnet",
+  "_deployedAt": "2026-05-01",
+  "_signer": "0x2ffc302fcd8c0eeab2796b3c1d134f18e8237762",
+  "_signerRole": "testnet faucet wallet (gas only — has no protocol role)",
+  "_admin": "0xa25236925bc10954e0519731cc7ba97f4bb5714b",
+  "_adminRole": "Sentrix Labs authority — feeToSetter on the Factory",
+  "SentrixV2Factory": {
+    "address": "0x8565392086cbA8D39cBba1F6f60ad1F1A17651C7",
+    "deployer_nonce": 7,
+    "feeToSetter": "0xa25236925bc10954e0519731cc7ba97f4bb5714b",
+    "pairCodeHash": "0xf7d8b4d1ce6c92cb3ce6b366dfb5977578db74e308b88facd5966df9e2a029dd"
+  },
+  "SentrixV2Router02": {
+    "address": "0x2bF73491733c3b87D72b16d4f7151dA294b55cB0",
+    "deployer_nonce": 8,
+    "factory": "0x8565392086cbA8D39cBba1F6f60ad1F1A17651C7",
+    "WSRX": "0x85d5E7694AF31C2Edd0a7e66b7c6c92C59fF949A"
+  }
+}
