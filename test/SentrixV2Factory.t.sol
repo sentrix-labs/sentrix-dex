@@ -58,14 +58,52 @@ contract SentrixV2FactoryTest is Test {
     }
 
     function test_set_fee_to_setter_succession() public {
+        // Audit H1 (2026-05-07): two-step rotation. Step 1 only proposes;
+        // current admin keeps role until step 2.
         address newAdmin = address(0xCAFE);
         vm.prank(feeAdmin);
         factory.setFeeToSetter(newAdmin);
+        assertEq(factory.feeToSetter(), feeAdmin);
+        assertEq(factory.pendingFeeToSetter(), newAdmin);
+        // Old admin still has the role pre-acceptance.
+        vm.prank(feeAdmin);
+        factory.setFeeTo(address(0x111));
+        assertEq(factory.feeTo(), address(0x111));
+        // Step 2: new admin accepts.
+        vm.prank(newAdmin);
+        factory.acceptFeeToSetter();
         assertEq(factory.feeToSetter(), newAdmin);
-        // Old admin can no longer set fee
+        assertEq(factory.pendingFeeToSetter(), address(0));
+        // Old admin can no longer set fee post-acceptance.
         vm.prank(feeAdmin);
         vm.expectRevert(bytes("SentrixV2: FORBIDDEN"));
         factory.setFeeTo(address(0x999));
+    }
+
+    function test_accept_fee_to_setter_only_pending() public {
+        vm.expectRevert(bytes("SentrixV2: NOT_PENDING"));
+        factory.acceptFeeToSetter();
+
+        address newAdmin = address(0xCAFE);
+        vm.prank(feeAdmin);
+        factory.setFeeToSetter(newAdmin);
+        vm.expectRevert(bytes("SentrixV2: NOT_PENDING"));
+        vm.prank(address(0xBAD));
+        factory.acceptFeeToSetter();
+    }
+
+    function test_set_fee_to_setter_revocable_pre_accept() public {
+        address candidate1 = address(0xCAFE);
+        address candidate2 = address(0xBEEF);
+        vm.prank(feeAdmin);
+        factory.setFeeToSetter(candidate1);
+        assertEq(factory.pendingFeeToSetter(), candidate1);
+        vm.prank(feeAdmin);
+        factory.setFeeToSetter(candidate2);
+        assertEq(factory.pendingFeeToSetter(), candidate2);
+        vm.prank(candidate1);
+        vm.expectRevert(bytes("SentrixV2: NOT_PENDING"));
+        factory.acceptFeeToSetter();
     }
 
     function test_pair_code_hash_matches_library_constant() public view {
