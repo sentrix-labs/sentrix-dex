@@ -17,6 +17,22 @@ contract SentrixV2Factory is ISentrixV2Factory {
     address public override feeTo;
     address public override feeToSetter;
 
+    // Audit H1 (2026-05-07): two-step rotation for feeToSetter. Single-step
+    // setFeeToSetter() can brick fee admin permanently if the operator
+    // mistypes the new address (or types an address whose private key is
+    // unknown). Two-step requires the new admin to actually CALL the
+    // accept function from their own address, proving they control it.
+    //
+    // Note: the currently-deployed mainnet factory at chain 7119 uses the
+    // pre-fix single-step pattern. This change applies only to future
+    // redeployments. Existing fee admin discipline: verify the new address
+    // works (e.g. signed-tx round-trip from it) BEFORE calling
+    // setFeeToSetter() on the deployed factory.
+    address public pendingFeeToSetter;
+
+    event FeeToSetterRotationProposed(address indexed current, address indexed pending);
+    event FeeToSetterRotationAccepted(address indexed previous, address indexed current);
+
     mapping(address => mapping(address => address)) public override getPair;
     address[] public override allPairs;
 
@@ -59,10 +75,26 @@ contract SentrixV2Factory is ISentrixV2Factory {
         feeTo = _feeTo;
     }
 
+    /// Step 1 of two-step rotation: current feeToSetter PROPOSES a successor.
+    /// The successor doesn't take effect until they call acceptFeeToSetter()
+    /// from their own address. Proposal is freely revocable: re-call with a
+    /// different `_feeToSetter` (or `address(this)` to clear) before accept.
     function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, "SentrixV2: FORBIDDEN");
-        // Zero-address would brick fee admin forever. Require a successor.
         require(_feeToSetter != address(0), "SentrixV2: ZERO_ADDRESS");
-        feeToSetter = _feeToSetter;
+        pendingFeeToSetter = _feeToSetter;
+        emit FeeToSetterRotationProposed(feeToSetter, _feeToSetter);
+    }
+
+    /// Step 2 of two-step rotation: pending successor accepts the role.
+    /// The caller MUST equal `pendingFeeToSetter`, proving they control the
+    /// address. This blocks the "typo to non-controlled EOA bricks fee admin
+    /// forever" failure mode the single-step pattern allows.
+    function acceptFeeToSetter() external {
+        require(msg.sender == pendingFeeToSetter, "SentrixV2: NOT_PENDING");
+        address previous = feeToSetter;
+        feeToSetter = pendingFeeToSetter;
+        pendingFeeToSetter = address(0);
+        emit FeeToSetterRotationAccepted(previous, feeToSetter);
     }
 }
