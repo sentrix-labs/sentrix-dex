@@ -1,5 +1,10 @@
 # Sentrix DEX
 
+[![CI](https://github.com/sentrix-labs/sentrix-dex/actions/workflows/test.yml/badge.svg)](https://github.com/sentrix-labs/sentrix-dex/actions/workflows/test.yml)
+[![License](https://img.shields.io/github/license/sentrix-labs/sentrix-dex)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/sentrix-labs/sentrix-dex?include_prereleases&sort=semver)](https://github.com/sentrix-labs/sentrix-dex/releases/latest)
+
+
 Native AMM for Sentrix Chain. UniswapV2-equivalent DEX targeting WSRX/stable pairs as
 the canonical price-discovery layer for SRX.
 
