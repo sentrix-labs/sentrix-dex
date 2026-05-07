@@ -8,8 +8,7 @@
 Native AMM for Sentrix Chain. UniswapV2-equivalent DEX targeting WSRX/stable pairs as
 the canonical price-discovery layer for SRX.
 
-> **Status (2026-04-30):** scaffold + deploy plan only. No contracts shipped yet.
-> Mainnet deploy gated on dedicated fresh-brain implementation session + audit pass.
+> **Status (2026-05-07):** **LIVE on mainnet + testnet.** Factory + Router02 + Pair deployed; first WSRX/SGC pool seeded. Live UI at [dex.sentrixchain.com](https://dex.sentrixchain.com) with swap, /pools, /add, /remove, /positions surfaces. Internal audit pass shipped 2026-05-07 (1 HIGH `feeToSetter` two-step rotation patched in source for v2 redeploys; deployed factory unaffected). See [`docs/ADDRESSES.md`](docs/ADDRESSES.md) for canonical addresses + INIT_CODE_HASH.
 
 ---
 
