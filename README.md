@@ -100,7 +100,7 @@ Operator decision (NOT scheduled yet):
 - [ ] Slither / Mythril / Aderyn static analysis pass
 - [ ] External audit (or peer review) of any deviation from canonical UniV2
 - [ ] Testnet bake ≥ 24h with synthetic swap traffic
-- [ ] Mainnet deploy from VPS4 with multisig admin (SentrixSafe)
+- [ ] Mainnet deploy with multisig admin (SentrixSafe)
 - [ ] Sourcify verification of all deployed contracts
 - [ ] Frontend integrated into `scan.sentrixchain.com` swap tab
   (existing scan UI needs a new `/swap` route — separate scope)
