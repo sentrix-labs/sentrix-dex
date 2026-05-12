@@ -1,0 +1,34 @@
+language: en-US
+early_access: false
+reviews:
+  profile: assertive
+  high_level_summary: true
+  poem: false
+  review_status: false
+  changed_files_summary: false
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!lib/**"
+    - "!out/**"
+    - "!cache/**"
+    - "!broadcast/**"
+    - "!**/CHANGELOG.md"
+  path_instructions:
+    - path: "contracts/**/*.sol"
+      instructions: |
+        Production EVM contracts handling user funds. Standard SWC/SCRC checks every PR:
+        - Reentrancy: state writes before external calls (CEI pattern); ReentrancyGuard where applicable.
+        - Access control: every public/external function changing privileged state has explicit auth.
+        - Integer math: Solidity 0.8+ default-checks; flag every `unchecked {}` block with justification.
+        - Oracle / external-data trust assumptions: fully spelled out + bounded.
+        - Upgradeability: storage-slot collisions on UUPS/Transparent? Use storage gaps.
+        - Events: every state-changing path emits indexed events (off-chain consumers depend on it).
+    - path: "test/**/*.sol"
+      instructions: |
+        Foundry tests. Want invariant + fuzz coverage on every public function with monetary impact.
+        Mocking should be minimal — prefer real-fork tests for cross-contract interactions.
+chat:
+  auto_reply: true
