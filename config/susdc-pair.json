@@ -1,0 +1,31 @@
+{
+  "asset": "sUSDC",
+  "name": "Sentrix Bridged USDC",
+  "decimals": 6,
+  "routePreference": {
+    "primary": "SRX/sUSDC",
+    "secondary": "SRX/sUSDT"
+  },
+  "testnet": {
+    "chainId": 7120,
+    "wsrx": "0x85d5E7694AF31C2Edd0a7e66b7c6c92C59fF949A",
+    "susdc": "",
+    "factory": "0x8565392086cbA8D39cBba1F6f60ad1F1A17651C7",
+    "router": "0x2bF73491733c3b87D72b16d4f7151dA294b55cB0",
+    "pair": ""
+  },
+  "mainnet": {
+    "chainId": 7119,
+    "wsrx": "0x4693b113e523A196d9579333c4ab8358e2656553",
+    "susdc": "",
+    "factory": "0xC5344f0DDE0B9916217449Ad9222e446475aD936",
+    "router": "0xAb67E171c0DE0Cd6dD6fE87E5E399C091F9c9dE8",
+    "pair": ""
+  },
+  "gates": [
+    "Do not create or seed SRX/sUSDC before the bridge route passes both directions.",
+    "Do not use placeholder sUSDC addresses.",
+    "Do not seed protocol-owned liquidity from custodial user funds.",
+    "Confirm sUSDC totalSupply <= Base USDC locked collateral before seeding."
+  ]
+}

@@ -74,6 +74,7 @@ Post-launch direction (no committed timeline):
 - Router aggregator across multiple pools
 - Governance module for protocol-fee parameter changes
 - Listing on DEXScreener + GeckoTerminal once volume justifies submission
+- SRX/sUSDC as the primary SRX price route after the official Base USDC -> Sentrix sUSDC bridge is deployed and verified. See [`docs/SUSDC_PAIR_RUNBOOK.md`](docs/SUSDC_PAIR_RUNBOOK.md).
 
 ---
 
