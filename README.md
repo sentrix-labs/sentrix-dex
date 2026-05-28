@@ -13,14 +13,23 @@ Native AMM for Sentrix Chain. UniswapV2-equivalent DEX targeting WSRX/stable pai
 
 ## Why this exists
 
-SRX has no exchange price today. The cheapest path to real price discovery without paying CEX listing fees + market-maker commitments is a native DEX:
+SRX is not listed on any centralised exchange yet — there is no CEX
+order book or market-maker commitment behind it. Price discovery so
+far happens entirely on-chain through the AMM pools deployed here.
+The cheapest path to broader external recognition (DEXScreener, CG,
+CMC, eventual CEX listings) is to seed liquidity natively and let the
+on-chain volume speak for itself.
 
 1. Deploy AMM contracts on Sentrix mainnet ✅
-2. Seed first pool from Eco Fund allocation ✅ (WSRX/SGC live on mainnet)
+2. Seed first pool from Eco Fund allocation ✅ (WSRX / SGC live on mainnet — small initial depth, see [`scan.sentrixchain.com`](https://scan.sentrixchain.com) for current liquidity + 24 h volume)
 3. List pool on DEXScreener / GeckoTerminal (free, automatic indexing) — pending submission
 4. Use the resulting on-chain volume as proof for CG / CMC / CEX submissions
 
-Without a DEX, every other path stalls because external listings ask "show me the DEX volume."
+> [!NOTE]
+> Initial pool depth is small by design — the Eco Fund seeded a
+> minimum-viable amount, not market-making liquidity. Quoted prices
+> from a thin pool can swing sharply on small trades; check the live
+> pool state on the explorer before sizing any execution.
 
 ---
 
